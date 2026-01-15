@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Maintenance Ticket API (Minimal)
+  version: 0.1.0
+paths:
+  /tickets:
+    post:
+      summary: Create a maintenance ticket
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketCreateResponse'
+        '400':
+          description: Bad request
+  /tickets/{ticketId}/status:
+    patch:
+      summary: Update ticket status
+      operationId: updateTicketStatus
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketStatusUpdateRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+
+components:
+  schemas:
+    TicketCreateRequest:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        assetId:
+          type: string
+          nullable: true
+          description: Optional. Equipment/asset identifier if available.
+        priorityProposal:
+          type: string
+          nullable: true
+          description: Optional. Proposal only; must NOT be treated as final priority.
+          enum: [critical, high, medium, low]
+        reportedBy:
+          type: string
+          nullable: true
+          description: Optional reporter identifier (user id, email, etc.)
+    TicketCreateResponse:
+      type: object
+      required: [ticketId, status]
+      properties:
+        ticketId:
+          type: string
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+    TicketStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+        updatedBy:
+          type: string
+          nullable: true
+          description: Optional operator identifier for audit.
+        note:
+          type: string
+          nullable: true
+    Ticket:
+      type: object
+      required: [ticketId, status, title, description]
+      properties:
+        ticketId:
+          type: string
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+        title:
+          type: string
+        description:
+          type: string
+        assetId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    TicketStatus:
+      type: string
+      enum: [new, in_progress, closed]

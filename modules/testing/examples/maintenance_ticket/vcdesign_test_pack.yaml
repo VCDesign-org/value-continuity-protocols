@@ -1,0 +1,120 @@
+vcdesign_test_pack:
+  meta:
+    name: "Maintenance Ticket API - VCDesign Test Pack Sample"
+    system_under_test: "maintenance-ticket-service"
+    version: "0.1"
+    created_at: "2026-01-15"
+    author: "sample"
+
+  value_definition:
+    primary_value: "設備不具合の報告〜処置の流れを止めずに、追跡可能にする（価値の継続）"
+    success_criteria:
+      - "チケットが必ず受付され、追跡用IDが返る"
+      - "チケットの状態遷移が監査可能（誰がいつ何をしたか）"
+      - "緊急度が高い案件が埋もれず、適切なエスカレーションができる"
+    unacceptable_outcomes:
+      - "チケットが作成されたのに記録が残らない（追跡不能）"
+      - "責任者不在のまま優先度や対応方針が自動確定される"
+      - "状態遷移が矛盾する（例：close済みがin_progressに戻る）"
+
+  boundaries:
+    forbidden:
+      - id: "B-FORBIDDEN-001"
+        description: "AIまたは自動処理が『優先度(critical/high/medium/low)』を確定してはいけない"
+        reason: "優先度確定は業務影響・安全影響を伴い責任を要するため"
+      - id: "B-FORBIDDEN-002"
+        description: "必須項目が欠けたチケットを『受付済み』として保存してはいけない"
+        reason: "追跡不能・再現不能になり、価値（継続）を毀損するため"
+
+    stop_conditions:
+      - condition: "入力に安全影響/人身影響が示唆されるのに、責任者（decision_owner）が特定できない"
+        action: "stop_and_defer_to_human"
+      - condition: "外部依存（通知/DB）が不安定で、二重登録や欠落が発生しうる"
+        action: "stop_and_defer_to_human"
+
+    optimization_allowed:
+      - description: "AIは類似事例検索や、推奨カテゴリ/推奨担当の提案はしてよい（ただし確定しない）"
+      - description: "AIは入力不足の指摘・追記質問の生成はしてよい"
+
+  responsibility:
+    decision_owner: "maintenance_lead_on_duty"
+    escalation_target: "plant_shift_supervisor"
+    approval_required: true
+
+  contracts:
+    api:
+      - name: "Maintenance Ticket REST API"
+        type: "openapi"
+        source: "TODO: /openapi.yaml"
+        critical_endpoints:
+          - method: "POST"
+            path: "/tickets"
+            expectation: "追跡ID(ticket_id)を返し、受付状態(new)で永続化される"
+          - method: "PATCH"
+            path: "/tickets/{ticket_id}/status"
+            expectation: "状態遷移が許可された場合のみ更新され、監査ログが残る"
+          - method: "GET"
+            path: "/tickets/{ticket_id}"
+            expectation: "作成内容と履歴（監査ログ）が取得できる"
+
+  intents:
+    bdd_scenarios:
+      - id: "S-001"
+        given: "オペレータが設備不具合を報告したい（最小必須情報を入力している）"
+        when: "POST /tickets を呼ぶ"
+        then: "ticket_id が返り、状態は new で保存され、監査ログに create が記録される"
+        notes: "必須項目の定義が曖昧ならTODOにする"
+      - id: "S-002"
+        given: "チケットが new の状態で存在し、当直リーダーが担当を割り当てる"
+        when: "PATCH /tickets/{id}/status を in_progress に更新する"
+        then: "状態が in_progress になり、誰が更新したか監査ログが残る"
+        notes: "不正な状態遷移は拒否されること"
+      - id: "S-003"
+        given: "入力文面に『煙』『感電』『人が倒れた』など安全影響が疑われる記述がある"
+        when: "POST /tickets を呼ぶ"
+        then: "自動確定は行わず stop_and_defer_to_human を満たす扱いとして、承認/エスカレーションを要求する"
+        notes: "AI提案は可能だが確定は禁止"
+
+  environment_model:
+    assumptions:
+      - "チケットはRDBに永続化され、ticket_idは一意"
+      - "監査ログは改ざん不能（append-only）として扱う"
+    external_dependencies:
+      - name: "database"
+        behavior: "チケット本体と監査ログを保存する。トランザクション境界が必要"
+      - name: "notification_service"
+        behavior: "critical相当の案件は当直責任者へ通知する（通知失敗は記録される）"
+    non_determinism:
+      - source: "notification delivery timing"
+        handling: "通知は少なくとも一回送る。重複通知は許容するが欠落は不可"
+      - source: "concurrent updates"
+        handling: "楽観ロックまたは状態遷移の整合性チェックで矛盾を防ぐ"
+
+  properties:
+    safety_properties:
+      - "必須項目欠落のチケットは受付済みとして永続化されない"
+      - "禁止境界：優先度の自動確定は行われない（提案は可・確定は不可）"
+      - "状態遷移は許可された遷移のみ（例：closed -> in_progress は不可）"
+    liveness_properties:
+      - "POST /tickets が成功した場合、必ず ticket_id が発行され追跡可能になる"
+      - "監査ログはチケット作成/更新のたびに必ず追加される"
+    defer_properties:
+      - "責任者不在または安全影響疑いがある場合、処理は止まり人間に判断を返す（stop_and_defer_to_human）"
+
+  telemetry:
+    signals:
+      - name: "ticket_create_success_rate"
+        meaning: "チケット作成が正常に受付されている比率（欠落は価値毀損）"
+      - name: "audit_log_append_failures"
+        meaning: "監査ログ追記失敗数（発生したら重大）"
+      - name: "invalid_state_transition_attempts"
+        meaning: "不正遷移の試行回数（UI/連携の不整合の兆候）"
+      - name: "defer_to_human_events"
+        meaning: "判断停止イベント数（増減は運用/入力品質/境界設計の兆候）"
+    regression_candidates:
+      - from_signal: "audit_log_append_failures"
+        test_focus: "DB障害/部分失敗時にチケットだけ保存されないこと（原子性）"
+      - from_signal: "invalid_state_transition_attempts"
+        test_focus: "状態遷移バリデーションの回帰（遷移表の変更時）"
+      - from_signal: "defer_to_human_events"
+        test_focus: "停止条件の検知ロジックが壊れていないこと（キーワード/分類/責任者判定）"

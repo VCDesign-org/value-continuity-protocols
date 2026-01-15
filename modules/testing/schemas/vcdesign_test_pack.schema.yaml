@@ -1,0 +1,177 @@
+# VCDesign Test Pack Schema (v0.1)
+#
+# PURPOSE
+# - A stable, human+AI friendly format contract to carry design intent into verification assets.
+# - This file is NOT a JSON Schema. It is a canonical "shape + rules" specification.
+#
+# COMPATIBILITY POLICY (MUST READ)
+#
+# This schema is designed for long-term reuse. Breaking changes destroy trust and tooling.
+# Follow these rules when evolving the schema.
+#
+# Versioning:
+# - `meta.version` is the schema version (e.g., "0.1", "0.2").
+# - Patch changes (0.1.x) are editorial only (wording, examples, clarifications).
+# - Minor changes (0.x -> 0.y) may add OPTIONAL fields only.
+# - Major changes (x.y -> z.0) may introduce breaking changes (avoid if possible).
+#
+# Backward compatibility rules:
+# 1) DO NOT rename existing keys.
+# 2) DO NOT change the meaning of existing keys.
+# 3) DO NOT change a field from optional -> required.
+# 4) DO NOT remove fields. Deprecate instead.
+# 5) DO NOT change enum values that are already used.
+#    - You MAY add new enum values only if consumers handle unknown values safely.
+# 6) DO NOT change types (string -> object, etc.). Add a new field instead.
+#
+# Deprecation rules:
+# - Keep deprecated fields for at least two minor versions.
+# - Mark them under `compatibility.deprecations` with:
+#   - field path
+#   - deprecated_since
+#   - removal_target_version
+#   - replacement
+#
+# Extension rules:
+# - Prefer adding new optional fields under:
+#   - `contracts.*` (new contract types)
+#   - `environment_model.*` (new observability)
+#   - `properties.*` (new invariants)
+#   - `telemetry.*` (new signals)
+# - Avoid adding deeply nested structures early. Start flat, then refine by adding new optional objects.
+#
+# Validation philosophy:
+# - Missing fields are allowed and valuable (they reveal ambiguity).
+# - The schema exists to prevent silent invention, not to force completeness.
+
+schema:
+  name: "vcdesign_test_pack"
+  schema_version: "0.1"
+  status: "stable-minimal"
+  owners:
+    - "value-continuity-protocols maintainers"
+  created_at: "2026-01-15"
+
+compatibility:
+  guarantees:
+    - "Existing keys and their meanings remain stable within a major version."
+    - "New fields may be added only as OPTIONAL within minor upgrades."
+  deprecations: []
+  notes:
+    - "Consumers should ignore unknown fields to allow forward compatibility."
+    - "Producers should avoid emitting fields not defined here unless namespaced under `extensions`."
+
+# OPTIONAL EXTENSIONS AREA
+# - Use this to experiment without breaking stable keys.
+# - Any experimental additions should live under `extensions.*`.
+extensions:
+  guidance:
+    - "Put experimental fields here first."
+    - "Promote to stable keys only after real usage and version bump."
+  # Example:
+  # experimental_feature_x:
+  #   enabled: false
+
+# CANONICAL SHAPE (v0.1)
+#
+# Required vs Optional:
+# - The schema is intentionally permissive.
+# - Tools should treat most fields as optional.
+# - However, these top-level keys MUST exist for a document to be considered a Test Pack:
+#   - vcdesign_test_pack
+#   - vcdesign_test_pack.meta
+#   - vcdesign_test_pack.value_definition
+#   - vcdesign_test_pack.boundaries
+#   - vcdesign_test_pack.responsibility
+#   - vcdesign_test_pack.contracts
+#   - vcdesign_test_pack.intents
+#   - vcdesign_test_pack.environment_model
+#   - vcdesign_test_pack.properties
+#   - vcdesign_test_pack.telemetry
+#
+# NOTE: Even when keys exist, inner fields may be empty or TODO.
+
+vcdesign_test_pack:
+  meta:
+    # Identity (recommended)
+    name: ""                 # string
+    system_under_test: ""    # string
+    version: ""              # string (schema version e.g., "0.1")
+    created_at: ""           # string (date-time or date)
+    author: ""               # string
+
+  value_definition:
+    primary_value: ""        # string
+    success_criteria:        # list[string]
+      - ""
+    unacceptable_outcomes:   # list[string]
+      - ""
+
+  boundaries:
+    forbidden:               # list[object]
+      - id: ""               # string (stable identifier)
+        description: ""      # string
+        reason: ""           # string
+    stop_conditions:         # list[object]
+      - condition: ""        # string
+        action: "stop_and_defer_to_human"  # enum (v0.1 fixed)
+    optimization_allowed:    # list[object]
+      - description: ""      # string
+
+  responsibility:
+    decision_owner: ""       # string
+    escalation_target: ""    # string
+    approval_required: true  # boolean
+
+  contracts:
+    api:                     # list[object]
+      - name: ""             # string
+        type: "openapi|graphql|asyncapi"  # enum-like string (v0.1)
+        source: ""           # string (path/url/ref). Keep stable. Prefer repo-relative paths.
+        critical_endpoints:  # list[object]
+          - method: ""       # string (GET/POST/PATCH/...)
+            path: ""         # string (e.g., /tickets/{id})
+            expectation: ""  # string
+
+  intents:
+    bdd_scenarios:           # list[object]
+      - id: ""               # string (stable identifier)
+        given: ""            # string
+        when: ""             # string
+        then: ""             # string
+        notes: ""            # string
+
+  environment_model:
+    assumptions:             # list[string]
+      - ""
+    external_dependencies:   # list[object]
+      - name: ""             # string
+        behavior: ""         # string
+    non_determinism:         # list[object]
+      - source: ""           # string
+        handling: ""         # string
+
+  properties:
+    safety_properties:       # list[string]
+      - ""
+    liveness_properties:     # list[string]
+      - ""
+    defer_properties:        # list[string]
+      - ""
+
+  telemetry:
+    signals:                 # list[object]
+      - name: ""             # string
+        meaning: ""          # string
+    regression_candidates:   # list[object]
+      - from_signal: ""      # string
+        test_focus: ""       # string
+
+# STYLE GUIDELINES (NON-BINDING)
+#
+# - Prefer stable IDs for forbidden boundaries and scenarios (e.g., "B-001", "S-001").
+# - Prefer short, testable sentences for properties ("X must never happen").
+# - Put human-only operational details outside OpenAPI; keep OpenAPI for observable signals only.
+# - Use TODO explicitly rather than vague prose.
+#
+# END
