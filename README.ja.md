@@ -64,7 +64,7 @@ Fact vs Hypothesis: ログや事実（Fact）と、AIの推論（Hypothesis）�
 より大きな設計思想の一部として位置づけられています。
 
 - VCDesign（設計思想・アーキテクチャ）  
-  https://vcdesign.org/
+  https://vcdesign.org/ja
 
 本リポジトリは単体でも利用・理解できます。  
 VCDesign を事前に知っている必要はありません。
