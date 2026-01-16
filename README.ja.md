@@ -54,3 +54,17 @@ Boundary Design: 何を自動化し、何を人間が判断するか（IDG: Inte
 Stop & Defer: 安全や信頼が脅かされる不確実な状況では、システムが「停止して人間に判断を委ねる（stop_and_defer_to_human）」ことを正しい振る舞いと定義します。
 
 Fact vs Hypothesis: ログや事実（Fact）と、AIの推論（Hypothesis）を厳密に区別し、混同によるリスクを防ぎます。
+
+---
+
+## Context
+
+このリポジトリは、AI支援システムにおける
+「責任・境界・判断のあり方」を探究する
+より大きな設計思想の一部として位置づけられています。
+
+- VCDesign（設計思想・アーキテクチャ）  
+  https://vcdesign.org/
+
+本リポジトリは単体でも利用・理解できます。  
+VCDesign を事前に知っている必要はありません。

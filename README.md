@@ -56,3 +56,17 @@ Input the finalized Test Pack to `prompts/testpack_to_tests.prompt.md` to auto-g
 **Stop & Defer**: In uncertain situations where safety or trust is threatened, defining that the system should "stop and defer judgment to humans (stop_and_defer_to_human)" is the correct behavior.
 
 **Fact vs Hypothesis**: Strictly distinguish between logs and facts (Fact) and AI reasoning (Hypothesis) to prevent risks from confusion.
+
+---
+
+## Context
+
+This repository is part of a broader design philosophy exploring
+how responsibility, boundaries, and decision-making should be handled
+in AI-assisted systems.
+
+- VCDesign (design philosophy & architecture):
+  https://vcdesign.org/
+
+This project can be used independently.
+Understanding VCDesign is not required.
