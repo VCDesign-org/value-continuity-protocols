@@ -17,8 +17,14 @@ This project is based on the perspective of **"The Continuer"**—deeply underst
 ```
 ├── prompts/                  # System prompts for AI assistants
 │   ├── value-continuity-protocols_v1.0.md  # Core protocol for design and review support
+│   ├── boa_quickstart.prompt.md            # Quickstart prompt for BOA usage
 │   ├── vcdesign_to_testpack.prompt.md      # Transform design agreement → Test Pack
 │   └── testpack_to_tests.prompt.md         # Generate executable test code from Test Pack
+│
+├── docs/
+│   └── boa/                  # BOA user guide
+│       ├── README.md
+│       └── README.ja.md
 │
 ├── modules/
 │   └── testing/              # VCDesign Testing Module
@@ -31,6 +37,18 @@ This project is based on the perspective of **"The Continuer"**—deeply underst
 
 ## Workflow: From Design to Verification
 VCDesign provides a flow that transforms ambiguous natural language design agreements into a structured contract called a "Test Pack," from which implementation and verification proceed.
+
+## BOA Quickstart
+Recommended shortest path for using VCDesign prompts with BOA.
+
+1. Load `prompts/boa_quickstart.prompt.md` into BOA
+2. Load `prompts/value-continuity-protocols_v1.0.md` and run the design session
+3. Use `prompts/vcdesign_to_testpack.prompt.md` to generate a Test Pack
+4. Use `prompts/testpack_to_tests.prompt.md` to generate test code
+
+## What You Get from This Repository
+- A Test Pack (YAML) that formalizes the design agreement as a contract
+- Generated test code from the Test Pack (Contract / PBT / Scenario tests)
 
 ### 1. Design Phase (Protocol)
 Work collaboratively with an AI loaded with `prompts/value-continuity-protocols_v1.0.md` to design the system's boundaries (Boundaries), responsibility ownership (Responsibility), and stop conditions (Stop Conditions). The AI acts as an observer pointing out risks rather than becoming an "accomplice in uncertainty."

@@ -16,8 +16,14 @@ Mission: "The Continuer"
 Repository Structure
 ├── prompts/                  # AIアシスタント用システムプロンプト
 │   ├── value-continuity-protocols_v1.0.md  # 設計・レビュー支援用コアプロトコル
+│   ├── boa_quickstart.prompt.md            # BOA向けクイックスタート用プロンプト
 │   ├── vcdesign_to_testpack.prompt.md      # 設計合意 → Test Pack 変換
 │   └── testpack_to_tests.prompt.md         # Test Pack → 実行可能テストコード生成
+│
+├── docs/
+│   └── boa/                  # BOA利用者向けガイド
+│       ├── README.md
+│       └── README.ja.md
 │
 ├── modules/
 │   └── testing/              # VCDesign Testing Module
@@ -28,6 +34,18 @@ Repository Structure
 └── README.md
 Workflow: From Design to Verification
 VCDesignでは、曖昧な自然言語による設計合意を「Test Pack」という構造化された契約（Contract）に変換し、そこから実装と検証を行うフローを提供します。
+
+BOAクイックスタート
+BOAで最短導線で使う場合の推奨手順です。
+
+1. prompts/boa_quickstart.prompt.md をBOAに読み込む
+2. prompts/value-continuity-protocols_v1.0.md を読み込み、設計セッションを実施
+3. prompts/vcdesign_to_testpack.prompt.md で Test Pack を生成
+4. prompts/testpack_to_tests.prompt.md でテストコードを生成
+
+このリポジトリで得られる成果物
+- 設計合意をTest Pack (YAML) として明文化する契約文書
+- Test Pack から生成されたテストコード（Contract / PBT / Scenario）
 
 1. Design Phase (Protocol)
 prompts/value-continuity-protocols_v1.0.md を読み込ませたAIと共に、システムの境界（Boundaries）、責任の所在（Responsibility）、停止条件（Stop Conditions）を対話的に設計します。AIは「不確実性の共犯者」にならず、リスクを指摘する観測者として振る舞います。
